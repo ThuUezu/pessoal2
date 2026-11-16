@@ -1,0 +1,36 @@
+# Render Blueprint: cria o serviço do backend (este repositório é só a API).
+# Use em Render > New > Blueprint e aponte para este repositório.
+# As variáveis marcadas "sync: false" são pedidas no painel na hora de criar (nada de segredo aqui).
+
+services:
+  - type: web
+    name: cuidar-da-analy-api
+    runtime: node
+    region: virginia            # perto do Neon "aws-us-east-1". Se o seu banco for de outra região, troque as duas.
+    plan: free                  # dorme após ~15 min sem uso. Para ficar sempre ligado: "starter".
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start     # aplica as migrations do banco e sobe o servidor
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"             # Node 20 (como pedido). Node 22 também foi testado: troque este número se quiser (veja o README).
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: ALLOWED_EMAIL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true     # o Render gera um valor aleatório e forte
+      - key: WEB_ORIGIN
+        sync: false             # endereço do site no Netlify, ex.: https://cuidar-da-analy.netlify.app
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+# Fase 2 (lembretes): o Cron Job que chama POST /internal/tick a cada 15 minutos entra aqui.

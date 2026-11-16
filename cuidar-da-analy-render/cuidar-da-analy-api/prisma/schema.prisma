@@ -1,0 +1,65 @@
+// Esquema do banco do "Cuidar da Analy".
+// Fase 1: só a lista "Coisas que ela gosta". As próximas fases acrescentam tabelas
+// em novas migrations (nunca editando a migration antiga).
+
+generator client {
+  provider   = "prisma-client-js"
+  // Sem binário do motor em Rust: o Prisma usa o driver "pg" (adapter) direto.
+  // Menos coisa para quebrar no Render e funciona igual no Neon.
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Category {
+  MAQUIAGEM
+  COMIDA
+  ROUPA
+  OUTRO
+}
+
+// A ordem importa: o Postgres ordena enums pela ordem de declaração (ALTA vem por último).
+enum Priority {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+enum ItemStatus {
+  PENDENTE
+  COMPRADO
+}
+
+enum Origin {
+  ELA_PEDIU
+  PEGOU_E_DEVOLVEU
+  ESTAVA_ACABANDO
+}
+
+enum PaidWith {
+  MEU_DINHEIRO
+  CAIXINHA
+}
+
+model Item {
+  id            String     @id @default(cuid())
+  name          String
+  category      Category   @default(OUTRO)
+  brand         String?
+  notes         String?
+  whereSeen     String?
+  priority      Priority   @default(MEDIA)
+  status        ItemStatus @default(PENDENTE)
+  origin        Origin     @default(ELA_PEDIU)
+  paidWith      PaidWith   @default(MEU_DINHEIRO)
+  photoUrl      String?
+  photoPublicId String?
+  purchasedAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([status, createdAt])
+}
